@@ -1,4 +1,4 @@
-def Standardize(path: str):
+def StandardizePath(path: str):
     return path.replace("\\", "/")
 
 

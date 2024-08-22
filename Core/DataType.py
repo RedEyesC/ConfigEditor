@@ -1,5 +1,5 @@
 def CheckType(value, type):
-    if type == "string":
+    if type == "str":
         return TryParseToString(value)
     elif type == "int":
         return TryParseToInt(value)
@@ -12,17 +12,17 @@ def CheckType(value, type):
         exit(-1)
 
 
-def TryParseToString(value):
+def TryParseToString(value: str):
+    return value
+
+
+def TryParseToInt(value: str):
     pass
 
 
-def TryParseToInt(value):
+def TryParseToArrayInt(value: str):
     pass
 
 
-def TryParseToArrayInt(value):
-    pass
-
-
-def TryParseToArrayString(value):
+def TryParseToArrayString(value: str):
     pass
