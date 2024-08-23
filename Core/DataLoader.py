@@ -16,13 +16,12 @@ class Cell:
 class Title:
     name: str
     index: int
-    root: bool
-    subTitle: dict[str, str]
+    subTitle: dict[str, str] = []
 
-    def __init__(self, name: str, index: int, root: bool = False):
+    def __init__(self, name: str, index: int):
         self.name = name
         self.index = index
-        self.root = root
+
         self.AddSubTitle("value", name)
 
     def AddSubTitle(self, tag, value):
@@ -32,39 +31,41 @@ class Title:
 class TitleRow:
     title: Title
     row: list[Cell]
+    tag: str
 
-    def __init__(self, title: str, row: list[Cell]):
+    def __init__(self, title: dict[int, Title], row: list[Cell]):
         self.title = title
         self.row = row
+        self.tag = self.GetRowTag()
+
+    def GetRowTag(self):
+        if len(self.row) > 0:
+            return self.row[0].value
+        else:
+            return ""
 
 
 class RowColumnSheet:
     rawUrl: str
-    name: str
 
     titles: dict[int, Title]
     sheetName: str
     cells: list[list[Cell]]
 
-    rows: list[any]
+    rows: list[TitleRow]
 
-    def __init__(
-        self, rawUrl: str, name: str, sheetName: str, titles: dict[int, Title], cells: list[list[Cell]]
-    ):
+    def __init__(self, rawUrl: str, sheetName: str, titles: dict[int, Title], cells: list[list[Cell]]):
         self.rawUrl = rawUrl
-        self.name = name
 
         self.titles = titles
         self.sheetName = sheetName
         self.cells = cells
         self.rows = []
 
-    def Load(self):
         for row in self.cells:
             if self.IsBlankRow(row):
                 continue
-
-            self.rows.append([self.GetRowTag(row), self.ParseOneLineTitleRow(row)])
+            self.rows.append(TitleRow(self.titles, row))
 
     def IsBlankRow(self, row):
         for title in self.title:
@@ -73,20 +74,6 @@ class RowColumnSheet:
                 return False
 
         return True
-
-    def GetRowTag(self, row):
-        if len(row) > 0:
-            return row[0].value
-        else:
-            return ""
-
-    def ParseOneLineTitleRow(self, row):
-        fields = {}
-
-        for title in self.title:
-            fields[title.name] = TitleRow(title, row)
-
-        return fields
 
 
 class TData:
@@ -113,22 +100,18 @@ class Record:
         self.tags = tags
 
 
-# 之后整理的时候移除DataLoader，现在暂时放这里
 def LoadTableFile(recordType, actualFile, sheetName):
     datas: list[Record] = []
 
     sheets: list[RowColumnSheet] = LoadRawSheets(actualFile, sheetName)
     for sheet in sheets:
-        for r in sheet.rows:
-            row: dict[str, TitleRow] = r[0]
-            tagStr: str = r[1]
-
-            if IsIgnoreTag(tagStr):
+        for TitleRow in sheet.rows:
+            if IsIgnoreTag(TitleRow.tag):
                 continue
 
             # 确认数据类型
-            data = TData(sheet, row, recordType)
-            datas.append(Record(data, sheet.rawUrl, tagStr))
+            data = TData(sheet, TitleRow, recordType)
+            datas.append(Record(data, sheet.rawUrl))
 
     return datas
 
@@ -142,18 +125,22 @@ def LoadRawSheets(rawUrl, sheetName):
         if sheetName == name or sheetName == None:
             worksheet = workbook[name]
             print(f"正在处理子表: {name}")
-            sheet = ParseRawSheet(rawUrl, sheetName, worksheet, name)
+            sheet = ParseRawSheet(
+                rawUrl,
+                name,
+                worksheet,
+            )
             sheets.append(sheet)
 
     workbook.close()
     return sheets
 
 
-def ParseRawSheet(rawUrl: str, sheetName: str, reader, name: str):
+def ParseRawSheet(rawUrl: str, sheetName: str, reader):
     metaStr = reader["A1"]
     state = TryParseMeta(metaStr)
     if state < 0:
-        print("非法配置格式错误")
+        print("A1单元格非法配置格式")
         exit(-1)
 
     if state > 0:
@@ -164,18 +151,17 @@ def ParseRawSheet(rawUrl: str, sheetName: str, reader, name: str):
     cells = ParseRawSheetContent(reader, orientRow)
     titles = ParseTitle(cells)
     RemoveNotDataRow(cells)
-    sheet = RowColumnSheet(rawUrl, sheetName, name, titles, cells)
-    sheet.Load()
+    sheet = RowColumnSheet(rawUrl, sheetName, titles, cells)
     return sheet
 
 
 def TryParseMeta(metaStr: str):
-    if metaStr == "" | metaStr.startswith("##"):
+    if metaStr == "" | (not metaStr.startswith("##")):
         return -1
 
     orientRow = 1
 
-    attrs = metaStr[2:].split("#")
+    attrs = metaStr[2:].split("##")
     for attr in attrs:
         if attr == "var":
             continue
@@ -255,7 +241,7 @@ def TryFindTopTitle(cells: list[list[Cell]]):
             break
 
         rowTag: str = row[0]
-        attrs = rowTag[2:].split("#")
+        attrs = rowTag[2:].split("##")
         if "var" in attrs:
             rowIndex = i
             break
@@ -296,7 +282,7 @@ def TryFindNextSubFieldRowIndex(cells, excelRowIndex):
 
 
 def IsIgnoreTitle(title: str):
-    return title.startswith("#")
+    return title.startswith("##")
 
 
 def IsIgnoreTag(tagStr: str):

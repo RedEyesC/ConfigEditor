@@ -1,6 +1,6 @@
 from Core.DataExporter import ExportData
 from Core.DataLoader import LoadTableFile, TData
-from Core.Utils import StandardizePath
+from Core.Utils import SplitFileAndSheetName, StandardizePath
 
 
 def Run(conf: str, targetPath: str, targets: str, dataTargetPath: str, dataTargets: str):
@@ -16,15 +16,16 @@ def Run(conf: str, targetPath: str, targets: str, dataTargetPath: str, dataTarge
 
 def LoadSchema(conf: str, targetPath: str, dataTargetPath: str):
     recordType = {
-        "name": "str",
-        "input": "str",
-        "mode": "str",
-        "index": "str",
+        "name": "table",
+        "output": "",
+        "mode": "list",
+        "index": "name",
     }
 
     tables: dict = {}
 
-    records = LoadTableFile(recordType, conf)
+    [actualFile, sheetName] = SplitFileAndSheetName(StandardizePath(conf))
+    records = LoadTableFile(recordType, actualFile, sheetName)
 
     dataTarget = StandardizePath(dataTargetPath)
 
@@ -48,9 +49,10 @@ def LoadDatas(tables: dict, targets: str):
     inputFiles = []
 
     for inputFile in inputFiles:
-        # TODO 有需求的话，可以在这扩展多分支合并
-        record = LoadTableFile("", "")
         table = tables[inputFile]
+        [actualFile, sheetName] = SplitFileAndSheetName(table["input"])
+        record = LoadTableFile(table, actualFile, sheetName)
+
         recordsByTables.append([table, record])
 
     return recordsByTables
