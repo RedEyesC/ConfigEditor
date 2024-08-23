@@ -76,7 +76,7 @@ class RowColumnSheet:
         return True
 
 
-class TData:
+class Record:
     fields: dict
 
     def __init__(self, sheet, row, recordType):
@@ -89,17 +89,6 @@ class TData:
             return None
 
 
-class Record:
-    data: any
-    source: str
-    tags: str
-
-    def __init__(self, data: any, source: str, tags: str):
-        self.data = data
-        self.source = source
-        self.tags = tags
-
-
 def LoadTableFile(recordType, actualFile, sheetName):
     datas: list[Record] = []
 
@@ -110,8 +99,8 @@ def LoadTableFile(recordType, actualFile, sheetName):
                 continue
 
             # 确认数据类型
-            data = TData(sheet, TitleRow, recordType)
-            datas.append(Record(data, sheet.rawUrl))
+            data = Record(sheet, TitleRow, recordType)
+            datas.append(data)
 
     return datas
 
