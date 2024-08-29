@@ -1,4 +1,4 @@
-def CheckType(value, type):
+def TryParseValue(value, type):
     if type == "str":
         return TryParseToString(value)
     elif type == "int":
@@ -17,7 +17,7 @@ def TryParseToString(value: str):
 
 
 def TryParseToInt(value: str):
-    pass
+    return int(value)
 
 
 def TryParseToArrayInt(value: str):

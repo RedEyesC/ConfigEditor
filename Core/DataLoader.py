@@ -1,6 +1,8 @@
 import math
 import openpyxl
 
+from Core.DataType import TryParseValue
+
 
 class Cell:
     row: int
@@ -27,14 +29,17 @@ class Title:
     def AddSubTitle(self, tag, value):
         self.subTitle[tag] = value
 
+    def GetSubTitle(self, tag):
+        return self.subTitle[tag]
+
 
 class TitleRow:
-    title: Title
+    titles: dict[int, Title]
     row: list[Cell]
     tag: str
 
-    def __init__(self, title: dict[int, Title], row: list[Cell]):
-        self.title = title
+    def __init__(self, titles: dict[int, Title], row: list[Cell]):
+        self.titles = titles
         self.row = row
         self.tag = self.GetRowTag()
 
@@ -78,15 +83,45 @@ class RowColumnSheet:
 
 class Record:
     fields: dict
+    data: dict
 
     def __init__(self, titleRow: TitleRow, recordType):
-        pass
+
+        titles = titleRow.titles
+        row = titleRow.row
+        for index in titles:
+            title = titleRow.titles[index]
+            key = title.name
+            type = title.GetSubTitle("type")
+
+            self.SetField(key, TryParseValue(row[index], type))
+
+        model = recordType["model"]
+
+        if model == "map":
+            for key in self.fields:
+                self.data[key] = self.GetField(key)
+        elif model == "list":
+
+            keys = recordType["index"]
+
+            tempData = self.data
+            for key in keys:
+                value = self.GetField(key)
+                tempData[value] = {}
+                tempData = tempData[value]
+
+            for key in self.fields:
+                tempData[key] = self.GetField(key)
 
     def GetField(self, fieldName: str):
         if fieldName in self.fields:
             return self.fields[fieldName]
         else:
             return None
+
+    def SetField(self, fieldName: str, value):
+        self.fields[fieldName] = value
 
 
 def LoadTableFile(recordType, actualFile, sheetName):
