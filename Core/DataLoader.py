@@ -79,7 +79,7 @@ class RowColumnSheet:
 class Record:
     fields: dict
 
-    def __init__(self, sheet, row, recordType):
+    def __init__(self, titleRow: TitleRow, recordType):
         pass
 
     def GetField(self, fieldName: str):
@@ -99,7 +99,7 @@ def LoadTableFile(recordType, actualFile, sheetName):
                 continue
 
             # 确认数据类型
-            data = Record(sheet, TitleRow, recordType)
+            data = Record(TitleRow, recordType)
             datas.append(data)
 
     return datas
