@@ -7,7 +7,7 @@ from Core.DataType import TryParseValue
 class Cell:
     row: int
     column: int
-    value: any
+    value: str
 
     def __init__(self, row, column, value):
         self.row = row
@@ -18,11 +18,11 @@ class Cell:
 class Title:
     name: str
     index: int
-    subTitle: dict[str, str] = []
 
     def __init__(self, name: str, index: int):
         self.name = name
         self.index = index
+        self.subTitle: dict[str, str] = {}
 
         self.AddSubTitle("value", name)
 
@@ -72,8 +72,9 @@ class RowColumnSheet:
                 continue
             self.rows.append(TitleRow(self.titles, row))
 
-    def IsBlankRow(self, row):
-        for title in self.title:
+    def IsBlankRow(self, row: list[Cell]):
+        for index in self.titles:
+            title = self.titles[index]
             v = row[title.index].value
             if v != None:
                 return False
@@ -88,6 +89,10 @@ class Record:
     def __init__(self, titleRow: TitleRow, recordType):
         titles = titleRow.titles
         row = titleRow.row
+
+        self.fields = {}
+        self.data = {}
+
         for index in titles:
             title = titleRow.titles[index]
             key = title.name
@@ -95,7 +100,7 @@ class Record:
 
             self.SetField(key, TryParseValue(row[index], type))
 
-        model = recordType["model"]
+        model = recordType["mode"]
 
         if model == "map":
             for key in self.fields:
@@ -178,7 +183,7 @@ def ParseRawSheet(rawUrl: str, sheetName: str, reader):
 
 
 def TryParseMeta(metaStr: str):
-    if (metaStr == "") | (not metaStr.startswith("##")):
+    if (metaStr == "") or (not metaStr.startswith("##")):
         return -1
 
     orientRow = 1
@@ -205,7 +210,7 @@ def ParseRawSheetContent(reader, orientRow: bool):
     for rowData in reader.rows:
         row: list[Cell] = []
         for i in range(len(rowData)):
-            row.append(Cell(rowIndex, i, row[i]))
+            row.append(Cell(rowIndex, i, rowData[i].value))
 
         originRows.append(row)
 
@@ -214,7 +219,7 @@ def ParseRawSheetContent(reader, orientRow: bool):
     finalRows: list[list[Cell]] = []
 
     if orientRow:
-        finalRows = orientRow
+        finalRows = originRows
     else:
         maxColumn: int = 0
 
@@ -237,14 +242,13 @@ def ParseRawSheetContent(reader, orientRow: bool):
 
 
 def ParseTitle(cells: list[list[Cell]]):
-    titles = []
-
     topTitleRowIndex = TryFindTopTitle(cells)
     if topTitleRowIndex < 0:
         print("没有定义任何有效 标题行")
         exit(-1)
 
-    ParseSubTitles(titles, cells, topTitleRowIndex + 1)
+    titles = {}
+    ParseSubTitles(titles, cells, topTitleRowIndex)
 
     if len(titles) < 0:
         print("没有定义任何有效 标题行")
@@ -259,10 +263,18 @@ def TryFindTopTitle(cells: list[list[Cell]]):
     for i in range(len(cells)):
         row = cells[i]
         rowLen = len(row)
-        if rowLen == 0 or (not row[0].startswith("##")):
+
+        if rowLen == 0:
             break
 
-        rowTag: str = row[0]
+        rowTag: str = row[0].value
+
+        if rowTag == None:
+            break
+
+        if not rowTag.startswith("##"):
+            break
+
         attrs = rowTag[2:].split("##")
         if "var" in attrs:
             rowIndex = i
@@ -278,24 +290,31 @@ def ParseSubTitles(titles: dict[int, Title], cells: list[list[Cell]], excelRowIn
 
     for i in range(rowLen):
         cell = row[i]
-        name: str = cell.Value
-        if IsIgnoreTitle(name):
+        name: str = cell.value
+        if (name == None) or IsIgnoreTitle(name):
             continue
 
         titles[i] = Title(name, i)
 
-    for i in range(excelRowIndex, len(cells)):
+    for i in range(excelRowIndex + 1, len(cells)):
         row = cells[i]
         rowLen = len(row)
-        if rowLen == 0 or (not row[0].startswith("##")):
+        if rowLen == 0:
             break
 
-        tag: str = row[0][2:]
+        rowtag = row[0].value
+
+        if (rowtag == None) or (not rowtag.startswith("##")):
+            break
+
+        tag: str = row[0].value[2:]
 
         for j in range(rowLen):
             cell = row[j]
-            value: str = cell.Value
-            titles[i].AddSubTitle(tag, value)
+            value: str = cell.value
+
+            if j in titles:
+                titles[j].AddSubTitle(tag, value)
 
 
 def TryFindNextSubFieldRowIndex(cells, excelRowIndex):
@@ -314,6 +333,6 @@ def IsIgnoreTag(tagStr: str):
 def RemoveNotDataRow(cells: list[list[Cell]]):
     for row in cells[::-1]:
         rowLen = len(row)
-
-        if rowLen == 0 or row[0].startswith("##"):
+        rowtag = row[0].value
+        if rowLen == 0 or (rowtag != None and rowtag.startswith("##")):
             cells.remove(row)
