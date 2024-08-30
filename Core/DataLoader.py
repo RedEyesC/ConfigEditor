@@ -86,7 +86,6 @@ class Record:
     data: dict
 
     def __init__(self, titleRow: TitleRow, recordType):
-
         titles = titleRow.titles
         row = titleRow.row
         for index in titles:
@@ -102,7 +101,6 @@ class Record:
             for key in self.fields:
                 self.data[key] = self.GetField(key)
         elif model == "list":
-
             keys = recordType["index"]
 
             tempData = self.data
@@ -161,7 +159,7 @@ def LoadRawSheets(rawUrl, sheetName):
 
 
 def ParseRawSheet(rawUrl: str, sheetName: str, reader):
-    metaStr = reader["A1"]
+    metaStr = reader["A1"].value
     state = TryParseMeta(metaStr)
     if state < 0:
         print("A1单元格非法配置格式")
@@ -180,7 +178,7 @@ def ParseRawSheet(rawUrl: str, sheetName: str, reader):
 
 
 def TryParseMeta(metaStr: str):
-    if metaStr == "" | (not metaStr.startswith("##")):
+    if (metaStr == "") | (not metaStr.startswith("##")):
         return -1
 
     orientRow = 1

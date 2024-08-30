@@ -1,5 +1,6 @@
+import sys
 from Core.DataExporter import ExportData
-from Core.DataLoader import LoadTableFile, TData
+from Core.DataLoader import LoadTableFile
 from Core.Utils import SplitFileAndSheetName, StandardizePath
 
 
@@ -29,8 +30,7 @@ def LoadSchema(conf: str, targetPath: str, dataTargetPath: str):
 
     dataTarget = StandardizePath(dataTargetPath)
 
-    for r in records:
-        data: TData = r.data
+    for data in records:
         temp: dict[str, str] = {}
         name: str = data.GetField("name")
         temp["name"] = name
