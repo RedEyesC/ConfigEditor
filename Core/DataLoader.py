@@ -98,7 +98,7 @@ class Record:
             key = title.name
             type = title.GetSubTitle("type")
 
-            self.SetField(key, TryParseValue(row[index], type))
+            self.SetField(key, TryParseValue(row[index].value, type))
 
         model = recordType["mode"]
 
