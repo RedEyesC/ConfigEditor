@@ -14,7 +14,7 @@
             "args": [
                 "G:/Project/ConfigEditor/Sample/table.xlsx",
                 "G:/Project/ConfigEditor/Sample",
-                "天赋.xlsx|buff.xlsx",
+                "talent|sysConfig",
                 "G:/Project/ConfigEditor/Sample",
                 "json",
             ]
