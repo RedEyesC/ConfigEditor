@@ -1,4 +1,3 @@
-import sys
 from Core.DataExporter import ExportData
 from Core.DataLoader import LoadTableFile
 from Core.Utils import SplitFileAndSheetName, StandardizePath
@@ -46,10 +45,10 @@ def LoadSchema(conf: str, targetPath: str, dataTargetPath: str):
 def LoadDatas(tables: dict, targets: str):
     recordsByTables: list = []
 
-    inputFiles = []
+    files = targets.split("|")
 
-    for inputFile in inputFiles:
-        table = tables[inputFile]
+    for file in files:
+        table = tables[file]
         [actualFile, sheetName] = SplitFileAndSheetName(table["input"])
         record = LoadTableFile(table, actualFile, sheetName)
 
@@ -59,7 +58,7 @@ def LoadDatas(tables: dict, targets: str):
 
 
 def ProcessDataTarget(recordsByTables: list, dataTargets: str):
-    dataTargets = []
-    for dataTarget in dataTargets:
+    fonts = dataTargets.split("|")
+    for font in fonts:
         for info in recordsByTables:
-            ExportData(info[0], info[1], dataTarget)
+            ExportData(info[0], info[1], font)
