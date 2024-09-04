@@ -16,7 +16,7 @@ def TryParseToString(value: str):
     if value == None:
         return ""
 
-    return value
+    return str(value)
 
 
 def TryParseToInt(value: str):
