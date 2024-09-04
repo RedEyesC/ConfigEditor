@@ -1,7 +1,6 @@
-import math
 import openpyxl
 
-from Core.DataType import TryParseValue
+from Core.DataType import TryParseMode, TryParseValue
 
 
 class Cell:
@@ -100,22 +99,10 @@ class Record:
 
             self.SetField(key, TryParseValue(row[index].value, type))
 
-        model = recordType["mode"]
+        # model = recordType["mode"]
+        # index = recordType["index"]
 
-        if model == "map":
-            for key in self.fields:
-                self.data[key] = self.GetField(key)
-        elif model == "list":
-            keys = recordType["index"]
-
-            tempData = self.data
-            for key in keys:
-                value = self.GetField(key)
-                tempData[value] = {}
-                tempData = tempData[value]
-
-            for key in self.fields:
-                tempData[key] = self.GetField(key)
+        # self.data = TryParseMode(model, self.fields, index)
 
     def GetField(self, fieldName: str):
         if fieldName in self.fields:
@@ -143,6 +130,12 @@ def LoadTableFile(recordType, actualFile, sheetName):
     return datas
 
 
+def LoadFileData(recordType, actualFile, sheetName):
+    datas = LoadTableFile(recordType, actualFile, sheetName)
+
+    return TryParseMode(recordType, datas)
+
+
 def LoadRawSheets(rawUrl, sheetName):
     sheets: list[RowColumnSheet] = []
 
@@ -151,7 +144,7 @@ def LoadRawSheets(rawUrl, sheetName):
     for name in workbook.sheetnames:
         if sheetName == name or sheetName == None:
             worksheet = workbook[name]
-            print(f"正在处理子表: {name}")
+            print(f"正在处理  {rawUrl}  子表: {name}")
             sheet = ParseRawSheet(
                 rawUrl,
                 name,
@@ -225,11 +218,11 @@ def ParseRawSheetContent(reader, orientRow: bool):
 
         for row in originRows:
             rowLen = len(row)
-            maxColumn = math.max(rowLen, maxColumn)
+            maxColumn = max(rowLen, maxColumn)
 
         finalRows: list[list[Cell]] = []
 
-        for i in range(len(maxColumn)):
+        for i in range(maxColumn):
             row: list[Cell] = []
 
             for j in range(len(originRows)):
@@ -237,6 +230,8 @@ def ParseRawSheetContent(reader, orientRow: bool):
                     row.append(originRows[j][i])
                 else:
                     row.append(Cell(j + 1, i, None))
+
+            finalRows.append(row)
 
     return finalRows
 
