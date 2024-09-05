@@ -1,5 +1,5 @@
 from Core.DataExporter import ExportData
-from Core.DataLoader import LoadFileData, LoadTableFile
+from Core.DataLoader import LoadTableFile
 from Core.Utils import SplitFileAndSheetName, StandardizePath
 
 
@@ -50,9 +50,9 @@ def LoadDatas(tables: dict, targets: str):
     for file in files:
         table = tables[file]
         [actualFile, sheetName] = SplitFileAndSheetName(table["input"])
-        data = LoadFileData(table, actualFile, sheetName)
+        datas = LoadTableFile(table, actualFile, sheetName)
 
-        recordsByTables.append([table, data])
+        recordsByTables.append([table, datas])
 
     return recordsByTables
 

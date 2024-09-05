@@ -1,13 +1,15 @@
-def ExportData(table, data, dataTarget):
+def ExportData(table, records, dataTarget):
     if dataTarget == "json":
-        ExportJson(data)
+        ExportJson(records)
     elif dataTarget == "bin":
-        ExportBin(data)
+        ExportBin(records)
 
 
-def ExportJson(data):
-    pass
+def ExportJson(records):
+    x = ""
+    for record in records:
+        pass
 
 
-def ExportBin(data):
+def ExportBin(records):
     pass

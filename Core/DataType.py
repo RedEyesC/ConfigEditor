@@ -50,11 +50,11 @@ def TryParseToArrayString(value: str):
     return arrayString
 
 
-def TryParseMode(model, fields, index):
+def TryParseMode(model, datas, index):
     if model == "map":
-        return TryParseToMap(fields, index)
+        return TryParseToMap(datas, index)
     elif model == "list":
-        return TryParseToList(fields, index)
+        return TryParseToList(datas, index)
     else:
         print("识别到未定义格式类型" + model)
         exit(-1)

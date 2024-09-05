@@ -92,6 +92,7 @@ class Record:
         self.fields = {}
         self.data = {}
 
+        # 转换数据类型
         for index in titles:
             title = titleRow.titles[index]
             key = title.name
@@ -99,10 +100,11 @@ class Record:
 
             self.SetField(key, TryParseValue(row[index].value, type))
 
-        # model = recordType["mode"]
-        # index = recordType["index"]
+        # 转换数据格式
+        model = recordType["mode"]
+        index = recordType["index"]
 
-        # self.data = TryParseMode(model, self.fields, index)
+        self.data = TryParseMode(model, self.fields, index)
 
     def GetField(self, fieldName: str):
         if fieldName in self.fields:
@@ -130,10 +132,10 @@ def LoadTableFile(recordType, actualFile, sheetName):
     return datas
 
 
-def LoadFileData(recordType, actualFile, sheetName):
-    datas = LoadTableFile(recordType, actualFile, sheetName)
+# def LoadFileData(recordType, actualFile, sheetName):
+#     datas = LoadTableFile(recordType, actualFile, sheetName)
 
-    return TryParseMode(recordType, datas)
+#     return TryParseMode(recordType, datas)
 
 
 def LoadRawSheets(rawUrl, sheetName):
