@@ -1,3 +1,6 @@
+import json
+
+
 def ExportData(table, records, dataTarget):
     if dataTarget == "json":
         ExportJson(table, records)
@@ -6,9 +9,26 @@ def ExportData(table, records, dataTarget):
 
 
 def ExportJson(table, records):
-    x = ""
+    x = {}
     for record in records:
-        pass
+        DataMerge(record.data, x)
+
+    with open(table["output"] + ".json", "w", encoding="utf-8") as file:
+        json.dump(x, file, indent=2, ensure_ascii=False)
+
+
+def DataMerge(data, x: dict):
+    for key in data:
+        value = data[key]
+
+        if isinstance(value, dict):
+            sub = x[key] if key in x else {}
+
+            x[key] = DataMerge(value, sub)
+        else:
+            x[key] = value
+
+    return x
 
 
 class BinData:
