@@ -56,39 +56,22 @@ def ExportBin(table, records):
 
 
 def data2Bin(data, binMap, byteArray: bytearray):
-    offset = len(byteArray)
 
     if isinstance(data, dict):
-
         # 2进制字典结构由1字节的类型定义,2字节的长度定义,4字节的键合集定义，字典长度x(4字节键值索引) 组成
         binData = b"\x01" + len(data).to_bytes(2, byteorder="big", signed=True)
-
-        binLen = 7 + len(data) * 4
-
-        # 预填充
-        byteArray[offset:offset] = bytearray(binLen)
 
         binData = binData + data2Bin(list(data.keys()), binMap, byteArray)
 
         for key in data:
             binData = binData + data2Bin(data[key], binMap, byteArray)
 
-        # 删除预填充
-        del byteArray[offset : offset + binLen]
-
     if isinstance(data, list):
         # 2进制列表结构由1字节的类型定义,2字节的长度定义,列表长度x4字节值索引 组成
         binData = b"\x02" + len(data).to_bytes(2, byteorder="big", signed=True)
-        binLen = 3 + len(data) * 4
-
-        # 预填充
-        byteArray[offset:offset] = bytearray(binLen)
 
         for value in data:
             binData = binData + data2Bin(value, binMap, byteArray)
-
-        # 删除预填充
-        del byteArray[offset : offset + binLen]
 
     elif isinstance(data, int):
         # 2进制int结构由1字节的类型定义,8字节的值定义
@@ -103,6 +86,7 @@ def data2Bin(data, binMap, byteArray: bytearray):
     if binData in binMap:
         return binMap[binData]
     else:
+        offset = len(byteArray)
         byteArray[offset:offset] = bytearray(binData)
         binOffset = offset.to_bytes(4, byteorder="big", signed=False)
         binMap[binData] = binOffset
