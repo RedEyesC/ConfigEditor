@@ -59,15 +59,18 @@ def data2Bin(data, binMap, byteArray: bytearray):
     offset = len(byteArray)
 
     if isinstance(data, dict):
-        # 2进制字典结构由1字节的类型定义,2字节的长度定义,字典长度x(4字节键名索引+4字节键值索引) 组成
+
+        # 2进制字典结构由1字节的类型定义,2字节的长度定义,4字节的键合集定义，字典长度x(4字节键值索引) 组成
         binData = b"\x01" + len(data).to_bytes(2, byteorder="big", signed=True)
-        binLen = 3 + len(data) * 8
+
+        binLen = 7 + len(data) * 4
 
         # 预填充
         byteArray[offset:offset] = bytearray(binLen)
 
+        binData = binData + data2Bin(list(data.keys()), binMap, byteArray)
+
         for key in data:
-            binData = binData + data2Bin(key, binMap, byteArray)
             binData = binData + data2Bin(data[key], binMap, byteArray)
 
         # 删除预填充
@@ -81,7 +84,6 @@ def data2Bin(data, binMap, byteArray: bytearray):
         # 预填充
         byteArray[offset:offset] = bytearray(binLen)
 
-        offset = offset + binLen
         for value in data:
             binData = binData + data2Bin(value, binMap, byteArray)
 
