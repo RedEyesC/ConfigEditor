@@ -55,11 +55,11 @@ def ExportBin(table, records):
         file.close()
 
 
+# 如果对配置表大小不够，可以考虑把索引从4字节有符号，转为4字节无符号，配置这样支持的大小可以扩展一倍
 def data2Bin(data, binMap, byteArray: bytearray):
-
     if isinstance(data, dict):
         # 2进制字典结构由1字节的类型定义,2字节的长度定义,4字节的键合集定义，字典长度x(4字节键值索引) 组成
-        binData = b"\x01" + len(data).to_bytes(2, byteorder="big", signed=True)
+        binData = b"\x01" + len(data).to_bytes(2, byteorder="big", signed=False)
 
         binData = binData + data2Bin(list(data.keys()), binMap, byteArray)
 
@@ -68,14 +68,14 @@ def data2Bin(data, binMap, byteArray: bytearray):
 
     if isinstance(data, list):
         # 2进制列表结构由1字节的类型定义,2字节的长度定义,列表长度x4字节值索引 组成
-        binData = b"\x02" + len(data).to_bytes(2, byteorder="big", signed=True)
+        binData = b"\x02" + len(data).to_bytes(2, byteorder="big", signed=False)
 
         for value in data:
             binData = binData + data2Bin(value, binMap, byteArray)
 
     elif isinstance(data, int):
-        # 2进制int结构由1字节的类型定义,8字节的值定义
-        binData = b"\x03" + data.to_bytes(8, byteorder="big", signed=True)
+        # 2进制int结构由1字节的类型定义,4字节的值定义
+        binData = b"\x03" + data.to_bytes(4, byteorder="big", signed=True)
 
     elif isinstance(data, str):
         # 2进制str结构由1字节的类型定义,2字节的长度定义,utf8编码的字符串长度组成
@@ -88,7 +88,7 @@ def data2Bin(data, binMap, byteArray: bytearray):
     else:
         offset = len(byteArray)
         byteArray[offset:offset] = bytearray(binData)
-        binOffset = offset.to_bytes(4, byteorder="big", signed=False)
+        binOffset = offset.to_bytes(4, byteorder="big", signed=True)
         binMap[binData] = binOffset
 
         return binOffset

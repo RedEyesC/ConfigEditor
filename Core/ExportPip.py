@@ -33,7 +33,7 @@ def LoadSchema(conf: str, targetPath: str, dataTargetPath: str):
         temp: dict[str, str] = {}
         name: str = data.GetField("name")
         temp["name"] = name
-        temp["output"] = dataTarget + "/config_" + name
+        temp["output"] = dataTarget + "/" + name
         temp["input"] = StandardizePath(targetPath + "/" + data.GetField("input"))
         temp["mode"] = data.GetField("mode")
         temp["index"] = data.GetField("index")
