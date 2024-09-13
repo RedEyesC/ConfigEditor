@@ -50,28 +50,45 @@ def ExportBin(table, records):
     data2Bin(x, binMap, byteArray)
 
     # 生成文件
-    with open(table["output"] + ".bin", "wb") as file:
+    with open(table["output"] + ".bytes", "wb") as file:
         file.write(byteArray)
         file.close()
 
 
 # 如果对配置表大小不够，可以考虑把索引从4字节有符号，转为4字节无符号，配置这样支持的大小可以扩展一倍
 def data2Bin(data, binMap, byteArray: bytearray):
+    offset = len(byteArray)
+
     if isinstance(data, dict):
         # 2进制字典结构由1字节的类型定义,2字节的长度定义,4字节的键合集定义，字典长度x(4字节键值索引) 组成
         binData = b"\x01" + len(data).to_bytes(2, byteorder="big", signed=False)
+
+        binLen = 7 + len(data) * 4
+
+        # 预填充
+        byteArray[offset:offset] = bytearray(binLen)
 
         binData = binData + data2Bin(list(data.keys()), binMap, byteArray)
 
         for key in data:
             binData = binData + data2Bin(data[key], binMap, byteArray)
 
+        # 删除预填充
+        del byteArray[offset : offset + binLen]
+
     if isinstance(data, list):
         # 2进制列表结构由1字节的类型定义,2字节的长度定义,列表长度x4字节值索引 组成
         binData = b"\x02" + len(data).to_bytes(2, byteorder="big", signed=False)
+        binLen = 3 + len(data) * 4
+
+        # 预填充
+        byteArray[offset:offset] = bytearray(binLen)
 
         for value in data:
             binData = binData + data2Bin(value, binMap, byteArray)
+
+        # 删除预填充
+        del byteArray[offset : offset + binLen]
 
     elif isinstance(data, int):
         # 2进制int结构由1字节的类型定义,4字节的值定义
@@ -86,7 +103,6 @@ def data2Bin(data, binMap, byteArray: bytearray):
     if binData in binMap:
         return binMap[binData]
     else:
-        offset = len(byteArray)
         byteArray[offset:offset] = bytearray(binData)
         binOffset = offset.to_bytes(4, byteorder="big", signed=True)
         binMap[binData] = binOffset
