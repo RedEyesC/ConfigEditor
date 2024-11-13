@@ -59,3 +59,8 @@ pipenv --venv
 2.Ctrl+Shift+P，输入Python Select Interpreter，选择刚刚的虚拟路径
 ![切换环境](Doc/env.png)
 3.安装Black Formatter，并设置为vscode的python格式化插件，启动保存时格式化功能
+
+
+### 4.打包exe文件
+
+在工程目录下运行  Pyinstaller  ConfigEditor.spec 即可在dist文件夹下找到生成的exe文件
