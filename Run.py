@@ -8,7 +8,7 @@ if __name__ == "__main__":
     startTime = time.process_time()
     try:
         args = sys.argv[1:]
-        Run(args[0], args[1], args[2], args[3], args[4])
+        Run(*args)
     except Exception as e:
         # 打印报错堆栈
         traceback.print_exc()

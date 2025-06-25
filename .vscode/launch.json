@@ -12,11 +12,11 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "./Sample/table.xlsx",
                 "./Sample",
-                "talent",
+                "buff",
                 "./Res",
                 "json|bin",
+                "./Sample/table.xlsx"
             ]
         }
     ]

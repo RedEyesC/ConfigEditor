@@ -138,6 +138,27 @@ def LoadTableFile(recordType, actualFile, sheetName):
 #     return TryParseMode(recordType, datas)
 
 
+def LoadFileTag(rawUrl, sheetName=None):
+
+    attrList: list[str] = []
+
+    workbook = openpyxl.load_workbook(rawUrl, read_only=True)  # 打开文件
+
+    for name in workbook.sheetnames:
+        if sheetName == name or sheetName == None:
+            worksheet = workbook[name]
+            metaStr = worksheet["A1"].value
+
+            state = TryParseMeta(metaStr, attrList)
+            if state < 0:
+                print("A1单元格非法配置格式")
+                exit(-1)
+
+    workbook.close()
+
+    return attrList
+
+
 def LoadRawSheets(rawUrl, sheetName):
     sheets: list[RowColumnSheet] = []
 
@@ -177,13 +198,15 @@ def ParseRawSheet(rawUrl: str, sheetName: str, reader):
     return sheet
 
 
-def TryParseMeta(metaStr: str):
+def TryParseMeta(metaStr: str, attrList: list[str] = []):
     if (metaStr == "") or (not metaStr.startswith("##")):
         return -1
 
     orientRow = 1
 
     attrs = metaStr[2:].split("##")
+    attrList.extend(attrs)
+
     for attr in attrs:
         if attr == "var":
             continue

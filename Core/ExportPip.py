@@ -1,11 +1,22 @@
 from Core.DataExporter import ExportData
-from Core.DataLoader import LoadTableFile
+from Core.DataLoader import LoadFileTag, LoadTableFile
 from Core.Utils import SplitFileAndSheetName, StandardizePath
 
 
-def Run(conf: str, targetPath: str, targets: str, dataTargetPath: str, dataTargets: str):
-    # 加载定义文件
-    tables: dict = LoadSchema(conf, targetPath, dataTargetPath)
+def Run(*args):
+
+    targetPath = args[0]
+    targets = args[1]
+    dataTargetPath = args[2]
+    dataTargets = args[3]
+
+    tables: dict
+    if len(args) >= 5:
+        # 加载定义文件
+        conf = args[4]
+        tables: dict = LoadSchema(conf, targetPath, dataTargetPath)
+    else:
+        tables: dict = LoadSchemaBytarget(targets, targetPath, dataTargetPath)
 
     # 根据定义文件加载配置表
     recordsByTables: list = LoadDatas(tables, targets)
@@ -37,6 +48,42 @@ def LoadSchema(conf: str, targetPath: str, dataTargetPath: str):
         temp["input"] = StandardizePath(targetPath + "/" + data.GetField("input"))
         temp["mode"] = data.GetField("mode")
         temp["index"] = data.GetField("index")
+        tables[name] = temp
+
+    return tables
+
+
+def LoadSchemaBytarget(targets: str, targetPath: str, dataTargetPath: str):
+    dataTarget = StandardizePath(dataTargetPath)
+
+    tables: dict = {}
+
+    targetList = targets.split("|")
+    for targe in targetList:
+
+        input = StandardizePath(targetPath + "/" + targe + ".xlsx")
+        mode = ""
+        index = ""
+
+        # 获取配置表的定义格
+        attrs = LoadFileTag(input)
+
+        for attr in attrs:
+            if attr == "map":
+                mode = "map"
+            elif attr == "list":
+                mode = "list"
+            elif attr.startswith("key_"):
+                indexs: str = attr[4:]
+                index = indexs.replace("|", ",")
+
+        temp: dict[str, str] = {}
+        name: str = targe
+        temp["name"] = targe
+        temp["output"] = dataTarget + "/" + targe
+        temp["input"] = input
+        temp["mode"] = mode
+        temp["index"] = index
         tables[name] = temp
 
     return tables
