@@ -122,8 +122,6 @@ def LoadTableFile(recordType, actualFile, sheetName):
     sheets: list[RowColumnSheet] = LoadRawSheets(actualFile, sheetName)
     for sheet in sheets:
         for TitleRow in sheet.rows:
-            if IsIgnoreTag(TitleRow.tag):
-                continue
 
             # 确认数据类型
             data = Record(TitleRow, recordType)
@@ -329,6 +327,9 @@ def ParseSubTitles(titles: dict[int, Title], cells: list[list[Cell]], excelRowIn
 
         tag: str = row[0].value[2:]
 
+        if tag == "":
+            break
+
         for j in range(rowLen):
             cell = row[j]
             value: str = cell.value
@@ -344,10 +345,6 @@ def TryFindNextSubFieldRowIndex(cells, excelRowIndex):
 
 def IsIgnoreTitle(title: str):
     return title.startswith("##")
-
-
-def IsIgnoreTag(tagStr: str):
-    return tagStr == "##"
 
 
 def RemoveNotDataRow(cells: list[list[Cell]]):
