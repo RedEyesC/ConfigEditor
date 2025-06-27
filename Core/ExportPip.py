@@ -74,7 +74,7 @@ def LoadSchemaBytarget(targets: str, targetPath: str, dataTargetPath: str):
                 mode = "map"
             elif attr == "list":
                 mode = "list"
-            elif attr.startswith("key_"):
+            elif attr.startswith("index_"):
                 indexs: str = attr[4:]
                 index = indexs.replace("|", ",")
 
