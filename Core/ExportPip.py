@@ -1,19 +1,21 @@
 from Core.DataExporter import ExportData
 from Core.DataLoader import LoadFileTag, LoadTableFile
-from Core.Utils import SplitFileAndSheetName, StandardizePath
+from Core.Utils import ParseArgs, SplitFileAndSheetName, StandardizePath
 
 
 def Run(*args):
 
-    targetPath = args[0]
-    targets = args[1]
-    dataTargetPath = args[2]
-    dataTargets = args[3]
+    parsedDict = ParseArgs(args)
 
+    targetPath = parsedDict["inputPath"]
+    targets = parsedDict["target"]
+    dataTargetPath = parsedDict["outPath"]
+    dataTargets = parsedDict["dataTarget"]
+   
     tables: dict
-    if len(args) >= 5:
+    if "conf" in parsedDict:
         # 加载定义文件
-        conf = args[4]
+        conf = parsedDict["conf"]
         tables: dict = LoadSchema(conf, targetPath, dataTargetPath)
     else:
         tables: dict = LoadSchemaBytarget(targets, targetPath, dataTargetPath)
@@ -23,7 +25,6 @@ def Run(*args):
 
     # 输出配置表
     ProcessDataTarget(recordsByTables, dataTargets)
-
 
 def LoadSchema(conf: str, targetPath: str, dataTargetPath: str):
     recordType = {

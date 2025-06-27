@@ -6,16 +6,21 @@
     "configurations": [
         {
             "name": "configEditor",
-            "type": "debugpy",
+            "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/Run.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
+                "-inputPath",
                 "./Sample",
-                "buff",
-                "./Res",
-                "json|bin",
+                "-outPath",
+                "./Res", 
+                "-target",
+                "buff", 
+                "-dataTarget", 
+                "json|bin", 
+                "-conf",
                 "./Sample/table.xlsx"
             ]
         }
