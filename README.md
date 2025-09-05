@@ -78,3 +78,10 @@ pipenv --venv
 ### 4.打包exe文件
 
 在工程目录下运行  Pyinstaller  ConfigEditor.spec 即可在dist文件夹下找到生成的exe文件
+
+## 三、其他
+
+参考项目[luban](https://github.com/focus-creative-games/luban)的一部分的格式规范和代码的结构
+
+对应导出的二进制文件如何组织数据结构和去除冗余数据还有待优化
+
