@@ -91,4 +91,5 @@ def GetField(fields, fieldName: str):
     if fieldName in fields:
         return fields[fieldName]
     else:
-        return None
+        print("识别到未定义主键名" + fieldName)
+        exit(-1)

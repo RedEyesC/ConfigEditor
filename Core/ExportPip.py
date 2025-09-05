@@ -70,12 +70,10 @@ def LoadSchemaBytarget(targets: str, targetPath: str, dataTargetPath: str):
         attrs = LoadFileTag(input)
 
         for attr in attrs:
-            if attr == "map":
-                mode = "map"
-            elif attr == "list":
-                mode = "list"
+            if attr.startswith("mode_"):
+                mode = attr[5:]
             elif attr.startswith("index_"):
-                indexs: str = attr[4:]
+                indexs: str = attr[6:]
                 index = indexs.replace("|", ",")
 
         temp: dict[str, str] = {}
